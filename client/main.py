@@ -1,14 +1,16 @@
 import logging
+import os
 import random
 import socket
 import string
-import time
 from argparse import ArgumentParser
 
 DEFAULT_NUMBER = 1000000000
 DEFAULT_NUMBER = 100
-HOST = "127.0.0.1"  # The server's hostname or IP address
-PORT = 65432  # The port used by the server
+HOST = "127.0.0.1"
+PORT = 65432
+CHAIN_FILE = "chains.txt"
+CHAIN_RESPOND_FILE = "chains_respond.txt"
 
 
 def get_random_string():
@@ -51,6 +53,7 @@ def process_file(filename_in, filename_out):
 
 
 def main():
+    cwd = os.getcwd()
     parser = ArgumentParser()
     parser.add_argument(
         "-n",
@@ -59,21 +62,19 @@ def main():
         help="Numbers of strings.",
         default=DEFAULT_NUMBER,
     )
-    default_filename = f'files/{time.strftime("%Y%m%d-%H%M%S")}.txt'
     parser.add_argument(
         "-f",
         "--file",
         dest="filename",
         help="Name of the file.",
-        default=default_filename,
+        default=f"{cwd}/{CHAIN_FILE}",
     )
-    default_filename_respond = f'files/{time.strftime("%Y%m%d-%H%M%S")}_respond.txt'
     parser.add_argument(
         "-r",
         "--file-respond",
         dest="filename_respond",
         help="Name of the file.",
-        default=default_filename_respond,
+        default=f"{cwd}/{CHAIN_RESPOND_FILE}",
     )
     arguments = parser.parse_args()
     if arguments.filename_respond == arguments.filename:
