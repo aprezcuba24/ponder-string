@@ -1,3 +1,4 @@
+import logging
 import random
 import socket
 import string
@@ -5,6 +6,7 @@ import time
 from argparse import ArgumentParser
 
 DEFAULT_NUMBER = 1000000000
+DEFAULT_NUMBER = 100
 HOST = "127.0.0.1"  # The server's hostname or IP address
 PORT = 65432  # The port used by the server
 
@@ -27,6 +29,20 @@ def write_file(filename, number_lines):
             f.write(f"{get_random_string()}\n")
 
 
+def read_file(filename):
+    with open(filename, "r") as f:
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            yield line.strip()
+
+
+def process_file(filename):
+    for line in read_file(filename):
+        print(line)
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument(
@@ -44,15 +60,28 @@ def main():
         help="Name of the file.",
         default=default_filename,
     )
-    args = parser.parse_args()
-    # write_file(args.filename, args.number)
+    default_filename_respond = f'files/{time.strftime("%Y%m%d-%H%M%S")}_respond.txt'
+    parser.add_argument(
+        "-r",
+        "--file-respond",
+        dest="filename_respond",
+        help="Name of the file.",
+        default=default_filename_respond,
+    )
+    arguments = parser.parse_args()
+    if arguments.filename_respond == arguments.filename:
+        logging.error("The respond file should be different to filename")
+        return
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        s.send(bytes(get_random_string(), 'utf-8'))
-        data = s.recv(1024)
-        value = float(data.decode())
-        print(f"Received {value}")
+    write_file(arguments.filename, arguments.number)
+    process_file(arguments.filename)
+
+    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #     s.connect((HOST, PORT))
+    #     s.send(bytes(get_random_string(), "utf-8"))
+    #     data = s.recv(1024)
+    #     value = float(data.decode())
+    #     print(f"Received {value}")
 
 
 if __name__ == "__main__":
