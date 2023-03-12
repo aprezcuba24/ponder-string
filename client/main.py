@@ -4,12 +4,11 @@ import os
 import random
 import socket
 import string
-from argparse import ArgumentParser
-
-logging.basicConfig(level=logging.INFO)
+from argparse import ArgumentParser, BooleanOptionalAction
 
 DEFAULT_NUMBER = 1000000000
-DEFAULT_NUMBER = 100000
+DEFAULT_NUMBER = 1000
+BATCH_WRITING = 100
 HOST = "127.0.0.1"
 PORT = 65432
 CHAIN_FILE = "chains.txt"
@@ -29,9 +28,13 @@ def get_random_string():
 
 
 def write_file(filename, number_lines):
+    logging.debug(f"Start writing file {filename}.")
     with open(filename, "w+") as f:
         for i in range(0, number_lines):
             f.write(f"{get_random_string()}\n")
+            if i % BATCH_WRITING == 0:
+                logging.debug(f"Lines => {i}.")
+        logging.debug(f"End writing file {filename}. Total lines {i}")
 
 
 def read_file(filename):
@@ -44,20 +47,22 @@ def read_file(filename):
 
 
 def process_file(filename_in, filename_out):
+    logging.debug(f"Start writing/processing file {filename_out}.")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s, open(
         filename_out, "w+"
     ) as f:
         s.connect((HOST, PORT))
-        for line in read_file(filename_in):
+        for i, line in enumerate(read_file(filename_in)):
             s.send(bytes(line, "utf-8"))
             data = s.recv(1024)
             value = float(data.decode())
             f.write(f"{value}\n")
+            if i % BATCH_WRITING == 0:
+                logging.debug(f"Lines processed => {i}.")
+        logging.debug(f"End writing/processing file {filename_out}. Total lines {i}")
 
 
-def main():
-    logging.info("Start processing")
-    start_time = datetime.datetime.now()
+def get_arguments():
     cwd = os.getcwd()
     parser = ArgumentParser()
     parser.add_argument(
@@ -81,7 +86,28 @@ def main():
         help="Name of the file.",
         default=f"{cwd}/{CHAIN_RESPOND_FILE}",
     )
-    arguments = parser.parse_args()
+    parser.add_argument(
+        "--verbose",
+        dest="verbose",
+        help="Show more logs.",
+        default=False,
+        action=BooleanOptionalAction,
+    )
+    return parser.parse_args()
+
+
+# I don't want to share this code between client and server because they can be two different applications.
+def set_logging(verbose):
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=level)
+    logging.info("Start processing")
+
+
+def main():
+    start_time = datetime.datetime.now()
+    arguments = get_arguments()
+    set_logging(arguments.verbose)
+
     if arguments.filename_respond == arguments.filename:
         logging.error("The respond file should be different to filename")
         return

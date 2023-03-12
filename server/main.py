@@ -2,6 +2,7 @@ import logging
 import socket
 import string
 import threading
+from argparse import ArgumentParser, BooleanOptionalAction
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
@@ -9,6 +10,7 @@ DOUBLE_A = 1000
 
 
 def ponder(string_value):
+    logging.debug(f"Processing => {string_value}")
     letters = 0
     digits = 0
     spaces = 0
@@ -38,7 +40,28 @@ def thread_client(conn):
         conn.sendall(bytes(str(value), "utf-8"))
 
 
+def get_arguments():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--verbose",
+        dest="verbose",
+        help="Show more logs.",
+        default=False,
+        action=BooleanOptionalAction,
+    )
+    return parser.parse_args()
+
+
+# I don't want to share this code between client and server because they can be two different applications.
+def set_logging(verbose):
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=level)
+    logging.info("Start processing")
+
+
 def main():
+    arguments = get_arguments()
+    set_logging(arguments.verbose)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
