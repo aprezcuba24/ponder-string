@@ -38,9 +38,16 @@ def read_file(filename):
             yield line.strip()
 
 
-def process_file(filename):
-    for line in read_file(filename):
-        print(line)
+def process_file(filename_in, filename_out):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s, open(
+        filename_out, "w+"
+    ) as f:
+        s.connect((HOST, PORT))
+        for line in read_file(filename_in):
+            s.send(bytes(line, "utf-8"))
+            data = s.recv(1024)
+            value = float(data.decode())
+            f.write(f"{value}\n")
 
 
 def main():
@@ -74,14 +81,7 @@ def main():
         return
 
     write_file(arguments.filename, arguments.number)
-    process_file(arguments.filename)
-
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #     s.connect((HOST, PORT))
-    #     s.send(bytes(get_random_string(), "utf-8"))
-    #     data = s.recv(1024)
-    #     value = float(data.decode())
-    #     print(f"Received {value}")
+    process_file(arguments.filename, arguments.filename_respond)
 
 
 if __name__ == "__main__":
