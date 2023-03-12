@@ -1,7 +1,7 @@
 import logging
+import multiprocessing
 import socket
 import string
-import threading
 from argparse import ArgumentParser, BooleanOptionalAction
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
@@ -62,14 +62,21 @@ def set_logging(verbose):
 def main():
     arguments = get_arguments()
     set_logging(arguments.verbose)
+    workers = []
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
-        while True:
-            conn, addr = s.accept()
-            print(f"Connected by {addr}")
-            worker = threading.Thread(target=thread_client, args=(conn,))
-            worker.start()
+        try:
+            while True:
+                conn, addr = s.accept()
+                logging.info(f"Connected by {addr}")
+                worker = multiprocessing.Process(target=thread_client, args=(conn,))
+                worker.start()
+                workers.append(worker)
+        except KeyboardInterrupt:
+            logging.debug(f"Closing workers {len(workers)}")
+            for worker in workers:
+                worker.terminate()
 
 
 if __name__ == "__main__":
