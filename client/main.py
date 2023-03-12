@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import random
@@ -5,8 +6,10 @@ import socket
 import string
 from argparse import ArgumentParser
 
+logging.basicConfig(level=logging.INFO)
+
 DEFAULT_NUMBER = 1000000000
-DEFAULT_NUMBER = 100
+DEFAULT_NUMBER = 100000
 HOST = "127.0.0.1"
 PORT = 65432
 CHAIN_FILE = "chains.txt"
@@ -53,6 +56,8 @@ def process_file(filename_in, filename_out):
 
 
 def main():
+    logging.info("Start processing")
+    start_time = datetime.datetime.now()
     cwd = os.getcwd()
     parser = ArgumentParser()
     parser.add_argument(
@@ -83,6 +88,8 @@ def main():
 
     write_file(arguments.filename, arguments.number)
     process_file(arguments.filename, arguments.filename_respond)
+    time_process = datetime.datetime.now() - start_time
+    logging.info(f"Process completed in {time_process.seconds} seconds.")
 
 
 if __name__ == "__main__":
