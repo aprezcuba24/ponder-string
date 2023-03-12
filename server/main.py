@@ -19,11 +19,10 @@ def ponder(string_value):
             digits += 1
         if string_value[i] == " ":
             spaces += 1
-        if (
-            i > 0
-            and string_value[i].lower() == "a"
-            and string_value[i - 1].lower() == "a"
-        ):
+        if i > 0 and [string_value[i].lower(), string_value[i - 1].lower()] == [
+            "a",
+            "a",
+        ]:
             logging.info(f"Double 'a' rule detected >> '{string_value}'")
             return DOUBLE_A
     value = letters * 1.5 + digits * 2

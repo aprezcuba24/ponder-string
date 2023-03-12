@@ -1,4 +1,3 @@
-import unittest
 from unittest.mock import call, mock_open, patch
 
 from client.main import write_file
