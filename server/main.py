@@ -33,8 +33,10 @@ def ponder(string_value):
 def thread_client(conn):
     while True:
         data = conn.recv(1024)
-        print(data)
-        conn.sendall(data)
+        if not data:
+            continue
+        value = ponder(data.decode())
+        conn.sendall(bytes(str(value), 'utf-8'))
 
 
 def main():

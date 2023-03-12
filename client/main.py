@@ -49,12 +49,10 @@ def main():
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
-        for i in range(0, 100):
-            s.send(b"Hello, world 22")
-            data = s.recv(1024)
-            print(f"Received {data!r}")
-            time.sleep(5)
-            print("dddd")
+        s.send(bytes(get_random_string(), 'utf-8'))
+        data = s.recv(1024)
+        value = float(data.decode())
+        print(f"Received {value}")
 
 
 if __name__ == "__main__":
